@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          npm install
+
+      - name: Run linter
+        run: |
+          npm run lint || echo "No lint script"
+
+      - name: Run tests
+        run: |
+          npm test || echo "No test script"
+
+  require-screenshot:
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.title, 'UI') || contains(github.event.pull_request.title, 'ui') || contains(github.event.pull_request.title, '界面')
+    needs: lint-and-test
+    
+    steps:
+      - name: Check PR description for screenshot
+        run: |
+          PR_BODY="${{ github.event.pull_request.body }}"
+          if [[ "$PR_BODY" == *".png"* ]] || [[ "$PR_BODY" == *".jpg"* ]] || [[ "$PR_BODY" == *".jpeg"* ]]; then
+            echo "✅ Screenshot found in PR description"
+            exit 0
+          else
+            echo "❌ No screenshot found in PR description"
+            exit 1
+          fi

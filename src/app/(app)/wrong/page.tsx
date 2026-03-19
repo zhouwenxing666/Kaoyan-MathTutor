@@ -190,9 +190,7 @@ export default function WrongPage() {
                       created_at: '',
                     }}
                     onAnswer={(answer) => handleAnswer(question.id, answer)}
-                    showResult={answeredSet.has(question.id)}
-                    userAnswer={answeredSet.has(question.id) ? question.userAnswer : undefined}
-                    isBookMode={true}
+                    showSolution={answeredSet.has(question.id)}
                   />
 
                   {/* 正确答案提示 */}

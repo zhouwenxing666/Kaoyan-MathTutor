@@ -19,6 +19,9 @@ export function getSupabaseClient() {
   return client
 }
 
+// Alias for backward compatibility
+export const createClient = getSupabaseClient
+
 // 懒加载的默认客户端
 let _supabase: ReturnType<typeof createBrowserClient> | null = null
 export function getSupabase() {

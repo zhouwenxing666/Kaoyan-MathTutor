@@ -10,7 +10,7 @@ interface WrongQuestion {
   chapterCode: string
   chapterName: string
   content: string
-  options: Record<'A' | 'B' | 'C' | 'D', string> | null
+  options: { A: string; B: string; C: string; D: string } | null
   userAnswer: string
   correctAnswer: string
   explanation: string

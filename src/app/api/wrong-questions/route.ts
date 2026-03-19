@@ -112,7 +112,7 @@ export async function GET() {
     const chapterName = chapterMap.get(q.chapter_code) ?? q.chapter_code
 
     // Transform options array to { A, B, C, D } record
-    let options: Record<'A' | 'B' | 'C' | 'D', string> | null = null
+    let options: { A: string; B: string; C: string; D: string } | null = null
     if (q.options && Array.isArray(q.options) && q.options.length > 0) {
       options = { A: '', B: '', C: '', D: '' }
       for (const opt of q.options) {

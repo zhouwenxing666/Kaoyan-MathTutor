@@ -10,10 +10,13 @@ import SolutionPanel from '@/components/question/SolutionPanel'
 import { ChevronLeft, ChevronRight, MessageCircle, BarChart2 } from 'lucide-react'
 import type { Question } from '@/types'
 
-// 模拟题目数据
+// 模拟题目数据（仅用于本地开发展示，实际使用从 API 获取）
 const mockQuestions: Question[] = [
   {
     id: '1',
+    subject_id: 1,
+    chapter_id: 1,
+    knowledge_point_id: null,
     type: 'choice',
     content: '设函数 $f(x) = \lim_{n \\to \\infty} \\frac{x^{2n+1} + a x^2 + b x}{x^{2n} + 1}$ 在 $(-\\infty, +\\infty)$ 上连续，则 $a, b$ 的值为',
     options: {
@@ -26,29 +29,46 @@ const mockQuestions: Question[] = [
     solution: '由连续性条件 $\\lim_{x \\to 1} f(x) = f(1)$ 可得 $a + b = 1$，再由 $\\lim_{x \\to -1} f(x) = f(-1)$ 可得 $-a + b = -1$，解得 $a = 1, b = 0$。',
     difficulty: 3,
     source: 'real_exam',
+    year: 2024,
+    pool_type: null,
+    is_published: true,
+    created_at: '2024-01-01',
   },
   {
     id: '2',
+    subject_id: 1,
+    chapter_id: 1,
+    knowledge_point_id: null,
     type: 'fill',
     content: '设 $f(x, y) = \\begin{cases} \\frac{x^2 y^2}{x^2 + y^2}, & (x, y) \\neq (0, 0) \\\\ 0, & (x, y) = (0, 0) \\end{cases}$，则 $\\frac{\\partial f}{\\partial x}(0, 0) = $ ____________',
+    options: null,
     answer: '0',
     solution: '按定义 $\\frac{\\partial f}{\\partial x}(0, 0) = \\lim_{\\Delta x \\to 0} \\frac{f(\\Delta x, 0) - f(0,0)}{\\Delta x} = \\lim_{\\Delta x \\to 0} \\frac{0 - 0}{\\Delta x} = 0$。',
     difficulty: 4,
     source: 'real_exam',
+    year: 2024,
+    pool_type: null,
+    is_published: true,
+    created_at: '2024-01-01',
   },
   {
     id: '3',
+    subject_id: 1,
+    chapter_id: 1,
+    knowledge_point_id: null,
     type: 'essay',
     content: '设 $f(x)$ 在 $[0, 1]$ 上连续，在 $(0, 1)$ 内可导，且 $f(0) = 0, f(1) = 1$。证明：存在 $\\xi \\in (0, 1)$ 使得 $f(\\xi) = 1 - \\xi$。',
+    options: null,
     solution: '构造辅助函数 $F(x) = f(x) - (1 - x) = f(x) + x - 1$。由题意 $F(0) = -1 < 0, F(1) = 1 > 0$，由零点定理可知存在 $\\xi \\in (0, 1)$ 使得 $F(\\xi) = 0$，即 $f(\\xi) = 1 - \\xi$。',
     difficulty: 3,
     source: 'real_exam',
+    year: 2024,
+    pool_type: null,
+    is_published: true,
+    created_at: '2024-01-01',
   },
 ]
 
-export default function TrainChapterPage() {
-  const params = useParams()
-  const chapterCode = params.chapterCode as string
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showSolution, setShowSolution] = useState(false)

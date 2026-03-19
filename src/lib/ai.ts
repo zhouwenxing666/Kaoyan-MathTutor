@@ -62,17 +62,25 @@ export async function checkDailyQuota(userId: string): Promise<{
 /**
  * 构建 AI 助教系统提示词
  */
+// Extended profile interface for AI context - these fields may exist in DB but not in type definition
+interface AIProfileContext {
+  name?: string
+  targetSubject?: string
+  targetSchool?: string
+}
+
 export function buildSystemPrompt(
   question: Question | null,
   userProfile: UserProfile | null,
   recentErrors: string[] = []
 ): string {
+  const profile = userProfile as (UserProfile & AIProfileContext) | null
   const basePrompt = `你是考研数学 AI 助教，专门帮助考生理解数学概念、解答题目、分析错误。
 
 背景信息：
-- 用户：${userProfile?.name || '考生'}
-- 科目：${userProfile?.targetSubject || '考研数学'}
-- 目标院校：${userProfile?.targetSchool || '未定'}
+- 用户：${profile?.name || '考生'}
+- 科目：${profile?.targetSubject || '考研数学'}
+- 目标院校：${profile?.targetSchool || '未定'}
 
 指导原则：
 1. 用通俗易懂的语言解释数学概念
@@ -88,7 +96,7 @@ export function buildSystemPrompt(
 当前题目：
 ${question.content}
 
-${question.options ? '选项：\n' + question.options.map(o => `${o.id}. ${o.content}`).join('\n') : ''}
+${question.options ? '选项：\n' + Object.entries(question.options).map(([id, content]) => `${id}. ${content}`).join('\n') : ''}
 
 请帮助用户：
 1. 理解题目的考查点

@@ -16,7 +16,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const supabase = createClient()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(({ data }: { data: { user: any } }) => {
       if (data.user && ADMIN_EMAILS.includes(data.user.email || '')) {
         setUser(data.user)
       } else {

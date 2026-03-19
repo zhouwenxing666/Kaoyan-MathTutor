@@ -30,7 +30,7 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
 
-    const { error } = await supabase.auth.signInWithOtp({
+    const { error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,

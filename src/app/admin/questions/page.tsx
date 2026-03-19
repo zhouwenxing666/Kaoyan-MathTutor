@@ -117,7 +117,7 @@ export default function AdminQuestionsPage() {
           onChange={e => setSearch(e.target.value)}
           className="max-w-xs"
         />
-        <Select value={typeFilter} onValueChange={setTypeFilter}>
+        <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v || 'all')}>
           <SelectTrigger className="w-36">
             <SelectValue placeholder="题目类型" />
           </SelectTrigger>

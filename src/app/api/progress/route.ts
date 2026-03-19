@@ -304,7 +304,7 @@ export async function GET() {
     today_correct_rate: todayCorrectRate,
     streak_days: streakDays,
     review_count: reviewCount ?? 0,
-    chapters: chaptersWithProgress as DashboardStats['chapters'],
+    chapters: chaptersWithProgress as unknown as DashboardStats['chapters'],
   }
 
   return NextResponse.json<APIResponse<DashboardStats>>({ data: stats, error: null })

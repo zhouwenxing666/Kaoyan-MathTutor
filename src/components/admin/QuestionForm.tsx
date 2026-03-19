@@ -235,7 +235,7 @@ export function QuestionForm({
               </Label>
               <Select
                 value={form.chapter_code}
-                onValueChange={v => setForm(f => ({ ...f, chapter_code: v }))}
+                onValueChange={v => setForm(f => ({ ...f, chapter_code: v || '' }))}
               >
                 <SelectTrigger className={errors.chapter_code ? 'border-red-500' : ''}>
                   <SelectValue placeholder="选择章节" />
@@ -339,7 +339,7 @@ export function QuestionForm({
                     <LatexEditor
                       value={option.content}
                       onChange={v => updateOption(option.id, v)}
-                      placeholder={`选项 ${option.label} 内容`}
+                      placeholder={`选项 ${option.id} 内容`}
                       minHeight={60}
                     />
                   </div>

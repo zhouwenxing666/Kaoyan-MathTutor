@@ -2,3 +2,11 @@
 __pycache__/
 *.pyc
 .git/
+
+# Build artifacts
+.next/
+web/.next/
+
+# Dependencies
+node_modules/
+web/node_modules/

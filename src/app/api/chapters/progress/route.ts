@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   // 获取所有章节（按 subject 和 level 排序）
   const { data: chapters, error: chaptersError } = await supabase
     .from('chapters')
-    .select('id, code, name, subject, level, total_questions')
+    .select('id, code, name, subject, level')
     .order('subject', { ascending: true })
     .order('level', { ascending: true })
 
@@ -28,6 +28,38 @@ export async function GET(request: NextRequest) {
       { data: null, error: '获取章节列表失败' },
       { status: 500 }
     )
+  }
+
+  if (!chapters || chapters.length === 0) {
+    return NextResponse.json<APIResponse<{
+      chapters: any[]
+      bySubject: any[]
+    }>>({
+      data: { chapters: [], bySubject: [] },
+      error: null,
+    })
+  }
+
+  const chapterIds = chapters.map((c) => c.id)
+
+  // 获取各章节实际发布的题目数量（修复：使用 questions 表的真实数量）
+  const { data: questionCounts, error: qCountError } = await supabase
+    .from('questions')
+    .select('chapter_id')
+    .in('chapter_id', chapterIds)
+    .eq('is_published', true)
+
+  if (qCountError) {
+    return NextResponse.json<APIResponse<null>>(
+      { data: null, error: '获取题目数量失败' },
+      { status: 500 }
+    )
+  }
+
+  // 聚合实际题目数量
+  const actualQuestionCount: Record<number, number> = {}
+  for (const q of questionCounts ?? []) {
+    actualQuestionCount[q.chapter_id] = (actualQuestionCount[q.chapter_id] ?? 0) + 1
   }
 
   // 获取用户所有进度记录
@@ -76,23 +108,24 @@ export async function GET(request: NextRequest) {
   const result = (chapters ?? []).map((chapter) => {
     const code = chapter.code
     const agg = chapterAgg[code]
-    const totalQuestions = chapter.total_questions ?? 0
+    // 修复：使用 questions 表中该章节实际发布的题目数量作为分母
+    const actualTotal = actualQuestionCount[chapter.id] ?? 0
     const attemptedQuestions = agg?.attemptedQuestions ?? 0
 
-    // 计算掌握度：已掌握题目数 / 题目总数（优先使用 total_questions）
-    // 如果章节没有 total_questions，则用尝试过的题目数估算
+    // 计算掌握度：已掌握题目数 / 实际题目总数
+    // 如果章节没有实际题目，则用尝试过的题目数估算掌握度
     const progress =
-      totalQuestions > 0
-        ? Math.round((agg?.masteredQuestions ?? 0) / totalQuestions * 100)
+      actualTotal > 0
+        ? Math.round(((agg?.masteredQuestions ?? 0) / actualTotal) * 100)
         : attemptedQuestions > 0
-          ? Math.round((agg?.masteredQuestions ?? 0) / attemptedQuestions * 100)
+          ? Math.round(((agg?.masteredQuestions ?? 0) / attemptedQuestions) * 100)
           : 0
 
     return {
       code,
       name: chapter.name,
       subject: chapter.subject,
-      totalQuestions,
+      totalQuestions: actualTotal, // 返回实际题目数量而非 chapters 表的 total_questions
       attemptedQuestions,
       masteredQuestions: agg?.masteredQuestions ?? 0,
       progress: Math.min(100, progress), // 最高不超过 100%
@@ -134,7 +167,7 @@ export async function GET(request: NextRequest) {
     groupedBySubject[subject].masteredQuestions += ch.masteredQuestions
   }
 
-  // 计算各 subject 的整体进度
+  // 计算各 subject 的整体进度（修复：使用实际题目数量）
   for (const subject of Object.values(groupedBySubject)) {
     subject.overallProgress =
       subject.totalQuestions > 0

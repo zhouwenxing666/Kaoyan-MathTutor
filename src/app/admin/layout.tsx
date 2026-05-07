@@ -4,26 +4,33 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 
-const ADMIN_EMAILS = ['1804808430@qq.com']
+const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? '')
+  .split(',')
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean)
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }: { data: { user: any } }) => {
-      if (data.user && ADMIN_EMAILS.includes(data.user.email || '')) {
+    void (async () => {
+      const { data } = await supabase.auth.getUser()
+      const email = (data.user?.email ?? '').toLowerCase()
+      if (data.user && email && ADMIN_EMAILS.includes(email)) {
         setUser(data.user)
       } else {
         router.push('/login?redirect=/admin/questions')
       }
       setLoading(false)
-    })
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   if (loading) {

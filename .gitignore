@@ -10,3 +10,9 @@ web/.next/
 # Dependencies
 node_modules/
 web/node_modules/
+
+# Local env files (never commit secrets)
+.env.local
+.env.local.*
+.env*.local
+.env*.bak

@@ -176,17 +176,20 @@ export default function WrongPage() {
                       id: question.id,
                       type: 'choice' as QuestionType,
                       content: question.content,
-                      options: question.options ?? { A: '', B: '', C: '', D: '' },
+                      options: question.options
+                        ? (Object.entries(question.options).map(([id, content]) => ({
+                            id: id as 'A' | 'B' | 'C' | 'D',
+                            content,
+                          })))
+                        : null,
                       answer: question.correctAnswer,
-                      solution: question.explanation,
+                      explanation: question.explanation ?? null,
+                      solution: null,
                       difficulty: 3,
-                      subject_id: 1,
-                      chapter_id: 0,
-                      knowledge_point_id: null,
-                      source: 'real_exam',
-                      year: null,
-                      pool_type: null,
-                      is_published: true,
+                      source: null,
+                      chapter_code: question.chapterCode,
+                      knowledge_points: null,
+                      is_essay: false,
                       created_at: '',
                     }}
                     onAnswer={(answer) => handleAnswer(question.id, answer)}

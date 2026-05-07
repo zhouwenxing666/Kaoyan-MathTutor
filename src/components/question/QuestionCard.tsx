@@ -19,16 +19,8 @@ export default function QuestionCard({
   onAnswer,
   showSolution = false
 }: QuestionCardProps) {
-  // 获取来源标签
-  const getSourceLabel = () => {
-    if (question.source === 'real_exam' && question.year) {
-      return `${question.year}年真题`
-    }
-    if (question.source === 'liyongle_adv') {
-      return '李永乐进阶'
-    }
-    return '自编题'
-  }
+  // 获取来源标签（DB 里 source 是自由文本，例如 "2024年真题"）
+  const getSourceLabel = () => question.source ?? ''
 
   // 获取难度标签
   const getDifficultyStars = () => {

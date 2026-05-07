@@ -1,36 +1,43 @@
-import Link from "next/link";
-import Navbar from "@/components/Navbar";
-import { BookOpen, BarChart2, MessageCircle, FileText } from "lucide-react";
+import Link from 'next/link'
+import Navbar from '@/components/Navbar'
+import { BookOpen, BarChart2, MessageCircle, FileText } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
 
 const features = [
   {
     icon: FileText,
-    title: "真题练习",
-    description: "收录1987年至今历年考研数学真题，按年份、题型、知识点分类练习",
+    title: '真题练习',
+    description: '收录1987年至今历年考研数学真题，按年份、题型、知识点分类练习',
   },
   {
     icon: BarChart2,
-    title: "错题分析",
-    description: "自动记录错题，智能分析薄弱知识点，生成个性化复习计划",
+    title: '错题分析',
+    description: '自动记录错题，智能分析薄弱知识点，生成个性化复习计划',
   },
   {
     icon: MessageCircle,
-    title: "AI 辅导",
-    description: "基于大模型的智能辅导系统，随时解答疑问，提供详细解题思路",
+    title: 'AI 辅导',
+    description: '基于大模型的智能辅导系统，随时解答疑问，提供详细解题思路',
   },
   {
     icon: BookOpen,
-    title: "知识体系",
-    description: "系统梳理数学一、二、三核心考点，构建完整知识体系",
+    title: '知识体系',
+    description: '系统梳理数学一、二、三核心考点，构建完整知识体系',
   },
-];
+]
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  const primaryHref = user ? '/dashboard' : '/register'
+  const primaryText = user ? '进入仪表盘' : '免费注册'
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      <Navbar isAuthed={!!user} />
 
-      {/* Hero */}
       <section className="bg-white py-20">
         <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
@@ -41,22 +48,21 @@ export default function HomePage() {
           </p>
           <div className="mt-8 flex justify-center gap-4">
             <Link
-              href="/study"
+              href={primaryHref}
               className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow hover:bg-blue-700 transition-colors"
             >
-              开始学习
+              {primaryText}
             </Link>
             <Link
-              href="/profile"
+              href={user ? '/train' : '/login'}
               className="rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              我的中心
+              {user ? '开始练题' : '登录'}
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Features */}
       <section className="py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="mb-10 text-center text-2xl font-bold text-gray-900">平台功能</h2>
@@ -77,5 +83,5 @@ export default function HomePage() {
         </div>
       </section>
     </div>
-  );
+  )
 }

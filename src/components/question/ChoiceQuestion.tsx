@@ -22,11 +22,20 @@ export default function ChoiceQuestion({
     showSolution ? 'submitted' : 'idle'
   )
 
-  const options = question.options ? Object.entries(question.options) : []
+  // 兼容两种存储形态：数组 [{id,content}] 或 Record { A: '...', B: '...' }
+  const options: [string, string][] = (() => {
+    const raw = question.options as unknown
+    if (!raw) return []
+    if (Array.isArray(raw)) {
+      return (raw as { id: string; content: string }[]).map((o) => [o.id, o.content])
+    }
+    return Object.entries(raw as Record<string, string>)
+  })()
 
   const handleSelect = (option: string) => {
-    if (state !== 'idle') return
+    if (state === 'submitted') return
     setSelected(option)
+    setState('selected')
   }
 
   const handleSubmit = () => {

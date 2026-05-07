@@ -40,14 +40,13 @@ export async function GET(request: NextRequest) {
     })
   }
 
-  const chapterIds = chapters.map((c) => c.id)
+  const chapterCodes = chapters.map((c) => c.code)
 
-  // 获取各章节实际发布的题目数量（修复：使用 questions 表的真实数量）
+  // 获取各章节实际发布的题目数量
   const { data: questionCounts, error: qCountError } = await supabase
     .from('questions')
-    .select('chapter_id')
-    .in('chapter_id', chapterIds)
-    .eq('is_published', true)
+    .select('chapter_code')
+    .in('chapter_code', chapterCodes)
 
   if (qCountError) {
     return NextResponse.json<APIResponse<null>>(
@@ -57,9 +56,11 @@ export async function GET(request: NextRequest) {
   }
 
   // 聚合实际题目数量
-  const actualQuestionCount: Record<number, number> = {}
+  const actualQuestionCount: Record<string, number> = {}
   for (const q of questionCounts ?? []) {
-    actualQuestionCount[q.chapter_id] = (actualQuestionCount[q.chapter_id] ?? 0) + 1
+    if (q.chapter_code) {
+      actualQuestionCount[q.chapter_code] = (actualQuestionCount[q.chapter_code] ?? 0) + 1
+    }
   }
 
   // 获取用户所有进度记录
@@ -108,8 +109,8 @@ export async function GET(request: NextRequest) {
   const result = (chapters ?? []).map((chapter) => {
     const code = chapter.code
     const agg = chapterAgg[code]
-    // 修复：使用 questions 表中该章节实际发布的题目数量作为分母
-    const actualTotal = actualQuestionCount[chapter.id] ?? 0
+    // 使用 questions 表中该章节实际题目数量作为分母
+    const actualTotal = actualQuestionCount[code] ?? 0
     const attemptedQuestions = agg?.attemptedQuestions ?? 0
 
     // 计算掌握度：已掌握题目数 / 实际题目总数

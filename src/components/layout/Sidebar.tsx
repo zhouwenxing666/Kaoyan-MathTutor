@@ -30,18 +30,14 @@ const navItems = [
 
 const tierLabels: Record<string, string> = {
   free: '免费版',
-  monthly: '月度会员',
-  quarterly: '季度会员',
-  yearly: '年度会员',
-  lifetime: '终身会员',
+  pro: '专业版',
+  enterprise: '企业版',
 }
 
 const tierColors: Record<string, string> = {
   free: 'bg-gray-100 text-gray-600',
-  monthly: 'bg-blue-100 text-blue-700',
-  quarterly: 'bg-purple-100 text-purple-700',
-  yearly: 'bg-amber-100 text-amber-700',
-  lifetime: 'bg-green-100 text-green-700',
+  pro: 'bg-blue-100 text-blue-700',
+  enterprise: 'bg-amber-100 text-amber-700',
 }
 
 export default function Sidebar({ userProfile, userEmail }: SidebarProps) {
@@ -55,7 +51,7 @@ export default function Sidebar({ userProfile, userEmail }: SidebarProps) {
   }
 
   const tier = userProfile?.subscription_tier ?? 'free'
-  const displayName = userProfile?.nickname ?? userEmail?.split('@')[0] ?? '用户'
+  const displayName = userProfile?.name ?? userEmail?.split('@')[0] ?? '用户'
 
   return (
     <aside className="w-64 flex-shrink-0 bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0">

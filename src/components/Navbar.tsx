@@ -1,7 +1,11 @@
-import Link from "next/link";
-import { BookOpen, GraduationCap, User } from "lucide-react";
+import Link from 'next/link'
+import { GraduationCap, LayoutDashboard, LogIn, UserPlus } from 'lucide-react'
 
-export default function Navbar() {
+interface NavbarProps {
+  isAuthed?: boolean
+}
+
+export default function Navbar({ isAuthed = false }: NavbarProps) {
   return (
     <nav className="border-b bg-white shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -11,23 +15,35 @@ export default function Navbar() {
             <span>考研数学平台</span>
           </Link>
           <div className="flex items-center gap-6">
-            <Link
-              href="/study"
-              className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-blue-600 transition-colors"
-            >
-              <BookOpen className="h-4 w-4" />
-              学习中心
-            </Link>
-            <Link
-              href="/profile"
-              className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-blue-600 transition-colors"
-            >
-              <User className="h-4 w-4" />
-              个人中心
-            </Link>
+            {isAuthed ? (
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                进入仪表盘
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                >
+                  <LogIn className="h-4 w-4" />
+                  登录
+                </Link>
+                <Link
+                  href="/register"
+                  className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  注册
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
     </nav>
-  );
+  )
 }

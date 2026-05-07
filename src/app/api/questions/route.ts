@@ -4,6 +4,7 @@ import type { APIResponse, Question } from '@/types'
 
 const FREE_DAILY_LIMIT = 5
 
+// GET /api/questions?chapter=H01&type=choice&limit=10&exclude=id1,id2
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
 
@@ -12,7 +13,10 @@ export async function GET(request: NextRequest) {
     error: authError,
   } = await supabase.auth.getUser()
   if (authError || !user) {
-    return NextResponse.json<APIResponse<null>>({ data: null, error: '未授权' }, { status: 401 })
+    return NextResponse.json<APIResponse<null>>(
+      { data: null, error: '未授权' },
+      { status: 401 }
+    )
   }
 
   const { searchParams } = request.nextUrl
@@ -28,18 +32,7 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  // 获取章节 ID
-  const { data: chapterData } = await supabase
-    .from('chapters')
-    .select('id')
-    .eq('code', chapter)
-    .single()
-
-  if (!chapterData) {
-    return NextResponse.json<APIResponse<Question[]>>({ data: [], error: null })
-  }
-
-  // 获取用户订阅信息
+  // 用户订阅信息
   const { data: profile } = await supabase
     .from('user_profiles')
     .select('subscription_tier')
@@ -48,39 +41,48 @@ export async function GET(request: NextRequest) {
 
   const isFree = !profile || profile.subscription_tier === 'free'
 
-  let limit = limitParam ? parseInt(limitParam, 10) : 10
+  let limit = limitParam ? Math.max(1, Math.min(50, parseInt(limitParam, 10))) : 10
 
-  // 免费用户：检查今日本章节已做数量
+  // 免费用户：每章每日限 FREE_DAILY_LIMIT 题（基于今日答题日志）
   if (isFree) {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    const { count } = await supabase
-      .from('answer_logs')
-      .select('*, questions!inner(chapter_id)', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .eq('questions.chapter_id', chapterData.id)
-      .gte('answered_at', today.toISOString())
+    // 先查出该章节所有题目 id，再用 in 过滤 answer_logs
+    const { data: chapterQs } = await supabase
+      .from('questions')
+      .select('id')
+      .eq('chapter_code', chapter)
 
-    const usedToday = count ?? 0
+    const chapterQIds = (chapterQs ?? []).map((q) => q.id)
+
+    let usedToday = 0
+    if (chapterQIds.length > 0) {
+      const { count } = await supabase
+        .from('answer_logs')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .in('question_id', chapterQIds)
+        .gte('created_at', today.toISOString())
+      usedToday = count ?? 0
+    }
+
     const remaining = Math.max(0, FREE_DAILY_LIMIT - usedToday)
-
     if (remaining === 0) {
       return NextResponse.json<APIResponse<Question[]>>({
         data: [],
         error: '免费用户每章每日最多 5 题，今日已达上限',
       })
     }
-
     limit = Math.min(limit, remaining)
   }
 
-  // 查询题目
   let query = supabase
     .from('questions')
-    .select('id, subject_id, chapter_id, knowledge_point_id, type, content, options, answer, solution, source, year, pool_type, difficulty, is_published, created_at')
-    .eq('chapter_id', chapterData.id)
-    .eq('is_published', true)
+    .select(
+      'id, type, content, options, answer, explanation, solution, difficulty, source, chapter_code, knowledge_points, is_essay, created_at'
+    )
+    .eq('chapter_code', chapter)
 
   if (type) {
     query = query.eq('type', type)
@@ -101,5 +103,8 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  return NextResponse.json<APIResponse<Question[]>>({ data: (data ?? []) as Question[], error: null })
+  return NextResponse.json<APIResponse<Question[]>>({
+    data: (data ?? []) as Question[],
+    error: null,
+  })
 }

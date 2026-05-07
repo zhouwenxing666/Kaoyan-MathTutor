@@ -17,14 +17,16 @@ export default function FillQuestion({
   const [answer, setAnswer] = useState('')
   const [submitted, setSubmitted] = useState(showSolution)
 
+  const correctAnswer = (question.answer ?? '').trim().toLowerCase()
+
   const handleSubmit = () => {
     if (!answer.trim()) return
-    
-    // 简单的答案比较（可以后续改进为更智能的匹配）
-    const isCorrect = answer.trim().toLowerCase() === question.answer.toLowerCase()
+    const isCorrect = !!correctAnswer && answer.trim().toLowerCase() === correctAnswer
     setSubmitted(true)
     onAnswer(answer, isCorrect)
   }
+
+  const isAnswerMatch = !!correctAnswer && answer.trim().toLowerCase() === correctAnswer
 
   return (
     <div className="space-y-4">
@@ -56,19 +58,13 @@ export default function FillQuestion({
 
       {/* 答案提示 */}
       {submitted && (
-        <div className={`p-4 rounded-lg ${
-          answer.toLowerCase() === question.answer.toLowerCase() 
-            ? 'bg-green-50 border border-green-200' 
-            : 'bg-red-50 border border-red-200'
-        }`}>
-          <p className={`font-medium ${
-            answer.toLowerCase() === question.answer.toLowerCase() 
-              ? 'text-green-600' 
-              : 'text-red-600'
-          }`}>
-            {answer.toLowerCase() === question.answer.toLowerCase() 
-              ? '回答正确！🎉' 
-              : `回答错误，正确答案是：${question.answer}`}
+        <div
+          className={`p-4 rounded-lg ${
+            isAnswerMatch ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+          }`}
+        >
+          <p className={`font-medium ${isAnswerMatch ? 'text-green-600' : 'text-red-600'}`}>
+            {isAnswerMatch ? '回答正确！🎉' : `回答错误，正确答案是：${question.answer ?? ''}`}
           </p>
         </div>
       )}
